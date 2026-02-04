@@ -1,4 +1,4 @@
-if(process.env.NODE_ENV != "production") {
+if (process.env.NODE_ENV != "production") {
   require("dotenv").config();
 }
 
@@ -29,7 +29,7 @@ async function main() {
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.urlencoded({extended : true})); 
+app.use(express.urlencoded({ extended: true }));
 app.use(method_override("_method"));
 app.engine('ejs', ejs_mate);
 app.use(express.static(path.join(__dirname, "public")));
@@ -43,8 +43,8 @@ const store = MongoStore.create({
 });
 
 
-store.on("error", function(e) {
-  console.log("Session store error", e); 
+store.on("error", function (e) {
+  console.log("Session store error", e);
 });
 
 const sessionOptions = {
@@ -52,7 +52,7 @@ const sessionOptions = {
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie : {
+  cookie: {
     expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
@@ -62,9 +62,7 @@ const sessionOptions = {
 
 
 //root route
-app.get("/", (req, res) => {
-  res.redirect("/listings");
-});
+
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -94,6 +92,12 @@ app.use((req, res, next) => {
 // });
 
 
+
+
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
+
 app.use("/listings", listingsRoutes);
 app.use("/listings/:id/reviews", reviewsRoutes);
 app.use("/", userRoutes);
@@ -103,9 +107,12 @@ app.all(/.*/, (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    const { statusCode = 500, message = "Something went wrong!" } = err;
-    res.status(statusCode).render("error.ejs", { err });
+  console.error(err.stack);
+  if (!res.locals.currentUser) {
+    res.locals.currentUser = null;
+  }
+  const { statusCode = 500, message = "Something went wrong!" } = err;
+  res.status(statusCode).render("error.ejs", { err });
 });
 
 app.listen(8080, () => {

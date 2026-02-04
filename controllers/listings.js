@@ -3,7 +3,7 @@ const Listing = require("../models/listing");
 const axios = require('axios');
 const GEOAPIFY_KEY = 'c91fa710f96d4e7ba45d4348267299b3';
 
-module.exports.index = async(req, res) => {
+module.exports.index = async (req, res) => {
     const all_listings = await Listing.find({});
     res.render("listings/index.ejs", { all_listings });
 };
@@ -99,13 +99,11 @@ module.exports.update = async (req, res) => {
     }
 
     // Update text fields
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-
-    // Update image if a new file was uploaded
+    listing.set(req.body.listing);
     if (req.file) {
         listing.image = { url: req.file.path, filename: req.file.filename };
-        await listing.save();
     }
+    await listing.save();
 
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
